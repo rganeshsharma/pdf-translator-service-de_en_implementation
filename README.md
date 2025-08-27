@@ -52,7 +52,8 @@ graph TB
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/pdf-translation-service.git
+git clone https://github.com/rganeshsharma/pdf-translator-service-de_en_implementation.git
+mv pdf-translator-service-de_en_implementation pdf-translation-service
 cd pdf-translation-service
 
 # Create virtual environment
@@ -418,8 +419,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🆘 Support
 
 - **Documentation**: See [docs/](docs/) directory
-- **Issues**: [GitHub Issues](https://github.com/rganeshsharma/pdf-translation-service/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/rganeshsharma/pdf-translation-service/discussions)
+- **Issues**: [GitHub Issues](https://github.com/rganeshsharma/pdf-translator-service-de_en_implementation/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/rganeshsharma/pdf-translator-service-de_en_implementation/discussions)
 - **Enterprise Support**: Contact [support@yourcompany.com](mailto:rganeshsharma@gmail.com)
 
 ## 🎯 Roadmap
