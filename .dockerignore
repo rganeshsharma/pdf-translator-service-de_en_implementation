@@ -1,0 +1,70 @@
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+.tox/
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test files (keep simple_test.py)
+test_*.py
+*_test.py
+
+# Sample/example files
+examples/
+samples/
+*.example
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Input/output directories (will be mounted)
+input/
+output/
+uploads/
+downloads/
+
+# Keep these essential files:
+# - requirements.txt
+# - de_en-translator_v2.py
+# - offline_model_downloader.py
+# - simple_test.py
+# - models/ (the actual model files)
+# - docker-entrypoint.sh

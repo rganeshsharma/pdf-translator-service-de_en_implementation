@@ -40,6 +40,16 @@ graph TB
 ```
 
 ## 🚀 Quick Start
+# Repo structure
+
+pdf-translation-service/
+├── 🐳 Docker (Multi-stage builds, security hardening)
+├── ☸️ Kubernetes (Complete manifests with auto-scaling)  
+├── 📊 Monitoring (Prometheus + Grafana)
+├── 🔄 CI/CD (GitHub Actions workflows)
+├── 📚 Helm Charts (Production-ready with multiple environments)
+├── 🧪 Testing (Unit, integration, load tests)
+└── 📖 Documentation (Comprehensive guides)
 
 ### Prerequisites
 
