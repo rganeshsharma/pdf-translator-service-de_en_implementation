@@ -1,0 +1,16 @@
+---
+# k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pdf-translator-config
+  namespace: pdf-translator
+data:
+  MODEL_PATH: "/app/models/Helsinki-NLP/opus-mt-de-en"
+  UPLOAD_PATH: "/app/uploads"
+  OUTPUT_PATH: "/app/outputs"
+  TEMP_PATH: "/app/temp"
+  MAX_FILE_SIZE: "52428800"  # 50MB
+  CLEANUP_INTERVAL: "3600"   # 1 hour
+  LOG_LEVEL: "info"
+  PYTHONPATH: "/app/src"

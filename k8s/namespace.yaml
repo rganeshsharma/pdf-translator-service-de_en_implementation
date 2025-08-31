@@ -1,0 +1,8 @@
+# k8s/namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pdf-translator
+  labels:
+    name: pdf-translator
+    app: pdf-translation-service
