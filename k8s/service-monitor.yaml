@@ -1,0 +1,17 @@
+---
+# k8s/service-monitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pdf-translator-monitor
+  namespace: pdf-translator
+  labels:
+    app: pdf-translator
+spec:
+  selector:
+    matchLabels:
+      app: pdf-translator
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 30s
