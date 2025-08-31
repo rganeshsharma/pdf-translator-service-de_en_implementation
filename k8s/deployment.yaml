@@ -1,0 +1,88 @@
+---
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pdf-translator-deployment
+  namespace: pdf-translator
+  labels:
+    app: pdf-translator
+    version: "1.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pdf-translator
+  template:
+    metadata:
+      labels:
+        app: pdf-translator
+        version: "1.0"
+    spec:
+      containers:
+      - name: pdf-translator
+        image: pdf-translator:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        envFrom:
+        - configMapRef:
+            name: pdf-translator-config
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: storage
+          mountPath: /app/uploads
+          subPath: uploads
+        - name: storage
+          mountPath: /app/outputs
+          subPath: outputs
+        - name: storage
+          mountPath: /app/temp
+          subPath: temp
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 10
+          failureThreshold: 12
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          claimName: pdf-translator-storage-claim
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
