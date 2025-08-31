@@ -1,0 +1,24 @@
+---
+# k8s/network-policy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: pdf-translator-network-policy
+  namespace: pdf-translator
+spec:
+  podSelector:
+    matchLabels:
+      app: pdf-translator
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - {} # Allow all egress traffic
