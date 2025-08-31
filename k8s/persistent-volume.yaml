@@ -1,0 +1,16 @@
+---
+# k8s/persistent-volume.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pdf-translator-storage
+  namespace: pdf-translator
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: fast-ssd
+  hostPath:
+    path: /data/pdf-translator
