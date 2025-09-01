@@ -1,0 +1,340 @@
+# helm/pdf-translation-chart/Chart.yaml
+apiVersion: v2
+name: pdf-translation-chart
+description: A Helm chart for PDF Translation Service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - pdf
+  - translation
+  - ai
+  - nlp
+home: https://github.com/yourusername/pdf-translation-service
+sources:
+  - https://github.com/yourusername/pdf-translation-service
+maintainers:
+  - name: Your Name
+    email: your.email@example.com
+
+---
+# helm/pdf-translation-chart/values.yaml
+# Default values for pdf-translation-chart
+replicaCount: 2
+
+image:
+  repository: pdf-translator
+  pullPolicy: Always
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+  runAsUser: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: pdf-translator.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pdf-translator-tls
+      hosts:
+        - pdf-translator.example.com
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+  requests:
+    cpu: 500m
+    memory: 2Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - pdf-translation-chart
+        topologyKey: kubernetes.io/hostname
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: "fast-ssd"
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  annotations: {}
+
+# Configuration
+config:
+  modelPath: "/app/models/Helsinki-NLP/opus-mt-de-en"
+  uploadPath: "/app/uploads"
+  outputPath: "/app/outputs"
+  tempPath: "/app/temp"
+  maxFileSize: "52428800"  # 50MB
+  cleanupInterval: "3600"   # 1 hour
+  logLevel: "info"
+
+# Health checks
+healthcheck:
+  enabled: true
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  startupProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 10
+    failureThreshold: 12
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    additionalLabels: {}
+    namespace: ""
+    interval: 30s
+    scrapeTimeout: 10s
+
+# Network Policy
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+    from: []
+  egress:
+    enabled: true
+    to: []
+
+---
+# helm/pdf-translation-chart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pdf-translation-chart.fullname" . }}
+  labels:
+    {{- include "pdf-translation-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "pdf-translation-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "pdf-translation-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "pdf-translation-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: MODEL_PATH
+              value: {{ .Values.config.modelPath | quote }}
+            - name: UPLOAD_PATH
+              value: {{ .Values.config.uploadPath | quote }}
+            - name: OUTPUT_PATH
+              value: {{ .Values.config.outputPath | quote }}
+            - name: TEMP_PATH
+              value: {{ .Values.config.tempPath | quote }}
+            - name: MAX_FILE_SIZE
+              value: {{ .Values.config.maxFileSize | quote }}
+            - name: CLEANUP_INTERVAL
+              value: {{ .Values.config.cleanupInterval | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.config.logLevel | quote }}
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          {{- if .Values.healthcheck.enabled }}
+          livenessProbe:
+            {{- toYaml .Values.healthcheck.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.healthcheck.readinessProbe | nindent 12 }}
+          startupProbe:
+            {{- toYaml .Values.healthcheck.startupProbe | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.persistence.enabled }}
+            - name: storage
+              mountPath: {{ .Values.config.uploadPath }}
+              subPath: uploads
+            - name: storage
+              mountPath: {{ .Values.config.outputPath }}
+              subPath: outputs
+            - name: storage
+              mountPath: {{ .Values.config.tempPath }}
+              subPath: temp
+            {{- end }}
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        {{- if .Values.persistence.enabled }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "pdf-translation-chart.fullname" . }}-storage
+        {{- end }}
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+---
+# helm/pdf-translation-chart/values-prod.yaml
+# Production values for pdf-translation-chart
+replicaCount: 5
+
+image:
+  repository: your-registry.com/pdf-translator
+  tag: "v1.0.0"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: pdf-translator.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pdf-translator-prod-tls
+      hosts:
+        - pdf-translator.yourdomain.com
+
+resources:
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+  requests:
+    cpu: 1000m
+    memory: 4Gi
+
+autoscaling:
+  enabled: true
+  minReplicas: 5
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 70
+
+persistence:
+  enabled: true
+  storageClass: "fast-ssd"
+  size: 50Gi
+
+config:
+  maxFileSize: "104857600"  # 100MB for production
+  cleanupInterval: "1800"   # 30 minutes
+  logLevel: "warn"
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+
+networkPolicy:
+  enabled: true

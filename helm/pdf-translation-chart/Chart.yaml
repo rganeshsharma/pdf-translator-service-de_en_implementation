@@ -1,0 +1,18 @@
+# helm/pdf-translation-chart/Chart.yaml
+apiVersion: v2
+name: pdf-translation-chart
+description: A Helm chart for PDF Translation Service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - pdf
+  - translation
+  - ai
+  - nlp
+home: https://github.com/rganeshsharma/pdf-translation-service
+sources:
+  - https://github.com/rganeshsharma/pdf-translation-service
+maintainers:
+  - name: Ganesh Sharma
+    email: rganeshsharma@gmail.com 
