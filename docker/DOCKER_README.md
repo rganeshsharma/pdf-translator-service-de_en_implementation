@@ -8,11 +8,11 @@ A standalone Docker container for translating German PDF documents to English wh
 
 ```bash
 # Pull the image from DockerHub
-docker pull your-dockerhub-username/pdf-translator:latest
+docker pull rganeshsharma2489/pdf-translator-service-de_en_docker_deploy/pdf-translator:latest
 
 # Translate a PDF file
 docker run -v $(pwd):/app/input -v $(pwd):/app/output \
-  your-dockerhub-username/pdf-translator:latest \
+  pdf-translator:latest \
   translate /app/input/german-document.pdf /app/output/english-document.pdf
 ```
 
