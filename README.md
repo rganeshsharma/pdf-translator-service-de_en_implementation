@@ -42,7 +42,7 @@ graph TB
 ## 🚀 Quick Start
 # Repo structure
 
-```mermaid
+```tree
 pdf-translation-service/
 ├── 🐳 Docker (Multi-stage builds, security hardening)
 ├── ☸️ Kubernetes (Complete manifests with auto-scaling)  
