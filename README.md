@@ -1,9 +1,9 @@
 # PDF Translation Service 🌐📄
 
-[![Build Status](https://github.com/rganeshsharma/pdf-translator-service-de_en_implementation/workflows/CI/badge.svg)](https://github.com/rganeshsharma/pdf-translator-service-de_en_implementation/actions)
-[![Docker Pulls](https://img.shields.io/docker/pulls/rganeshsharma2489/pdf-translator)](https://hub.docker.com/r/rganeshsharma2489/pdf-translator)
+[![Docker Pulls](https://img.shields.io/docker/pulls/rganeshsharma2489/pdf-translator-service-de_en_docker_deploy)](https://hub.docker.com/repository/docker/rganeshsharma2489/pdf-translator-service-de_en_docker_deploy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+)
 
 A high-performance, production-ready microservice for translating German PDF documents to English while preserving original layout and formatting. Built with FastAPI, deployed on Kubernetes, and optimized for enterprise use.
 
