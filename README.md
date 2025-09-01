@@ -42,6 +42,7 @@ graph TB
 ## 🚀 Quick Start
 # Repo structure
 
+```mermaid
 pdf-translation-service/
 ├── 🐳 Docker (Multi-stage builds, security hardening)
 ├── ☸️ Kubernetes (Complete manifests with auto-scaling)  
@@ -50,6 +51,7 @@ pdf-translation-service/
 ├── 📚 Helm Charts (Production-ready with multiple environments)
 ├── 🧪 Testing (Unit, integration, load tests)
 └── 📖 Documentation (Comprehensive guides)
+```
 
 ### Prerequisites
 
