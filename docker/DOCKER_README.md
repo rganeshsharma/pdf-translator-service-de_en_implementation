@@ -1,81 +1,58 @@
-# PDF Translation Service - Docker Edition 🐳
+# PDF Translation Service - Docker Edition 🐳📄
 
-A standalone Docker container for translating German PDF documents to English while preserving layout and formatting. The container includes all models and dependencies for completely offline operation.
+[![Docker Pulls](https://img.shields.io/docker/pulls/rganeshsharma2489/pdf-translator-service-de_en_docker_deploy)](https://hub.docker.com/repository/docker/rganeshsharma2489/pdf-translator-service-de_en_docker_deploy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-## 🚀 Quick Start
+A standalone Docker container for translating German PDF documents to English while preserving original layout and formatting. **Completely offline** - no internet required after initial setup!
 
-### Pull and Run (Recommended)
+## 🚀 Quick Start (Ready-to-Use Image)
 
-```bash
-# Pull the image from DockerHub
-docker pull rganeshsharma2489/pdf-translator-service-de_en_docker_deploy/pdf-translator:latest
-
-# Translate a PDF file
-docker run -v $(pwd):/app/input -v $(pwd):/app/output \
-  pdf-translator:latest \
-  translate /app/input/german-document.pdf /app/output/english-document.pdf
-```
-
-### Test the Container
+Download the image from DockerHub:
 
 ```bash
-# Test that the translation model works
-docker run --rm your-dockerhub-username/pdf-translator:latest test
+# Pull the pre-built image
+docker pull rganeshsharma2489/pdf-translator-service-de_en_docker_deploy:1.0.0
+
+# Create directories for your files
+mkdir -p input output
+
+# Put your German PDF in the input directory
+cp your-german-document.pdf input/
+
+# Translate it!
+docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output \
+  rganeshsharma2489/pdf-translator-service-de_en_docker_deploy:1.0.0 \
+  translate /app/input/your-german-document.pdf /app/output/english-document.pdf
 ```
 
-## 📋 Features
+**That's it!** Check the `output` directory for your translated PDF.
 
-- **🔄 Offline Translation**: Complete German-to-English translation with no internet required
-- **🎨 Layout Preservation**: Maintains original PDF formatting, fonts, and positioning  
-- **🐳 Self-Contained**: All models and dependencies included in the image
-- **🔒 Secure**: Runs as non-root user with minimal permissions
-- **📁 Volume Support**: Easy file mounting for input/output
-- **🚀 Fast**: Pre-loaded models for instant translation
-
-## 🛠️ Building from Source
+## 🏗️ Customize the Image and Tag
 
 ### Prerequisites
 
-1. **Docker installed** (version 20.10+)
-2. **Model files downloaded** in your local directory:
-   ```
-   pdf-translator/
-   ├── de_en-translator_v2.py
-   ├── models/
-   │   └── Helsinki-NLP/
-   │       └── opus-mt-de-en/
-   │           ├── config.json
-   │           ├── pytorch_model.bin
-   │           ├── tokenizer_config.json
-   │           └── ... (other model files)
-   ├── requirements.txt
-   └── Dockerfile
-   ```
+**Docker installed** (version 20.10+) 
 
-### Download Models (If Not Already Done)
-
+## Quick Start
 ```bash
-# Download the translation models offline
-python offline_model_downloader.py
-```
+# Pull the image
+docker pull rganeshsharma2489/pdf-translator-service-de_en_docker_deploy:1.0.0
 
-### Build the Image
+# Tag your Image for example 
+docker tag rganeshsharma2489/pdf-translator-service-de_en_docker_deploy:1.0.0 pdf-translator:latest
 
-```bash
-# Make the build script executable
-chmod +x docker-build.sh
+# Create directories
+mkdir -p input output
 
-# Build locally
-./docker-build.sh
+# Add your German PDF to input/ directory
+cp your-german-document.pdf input/
 
-# Build and push to DockerHub
-./docker-build.sh -u your-dockerhub-username -v 1.0.0 -p
+# Translate it!
+docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output \
+  pdf-translator:latest \
+  translate /app/input/your-german-document.pdf /app/output/english-document.pdf
 
-# Build with testing
-./docker-build.sh -t
-
-# Clean build without cache
-./docker-build.sh --no-cache
 ```
 
 ## 📖 Usage Examples
@@ -83,8 +60,11 @@ chmod +x docker-build.sh
 ### Basic Translation
 
 ```bash
-# Translate a single PDF file
-docker run -v $(pwd):/app/input -v $(pwd):/app/output \
+# Create directories
+mkdir -p input output
+
+# Translate a PDF
+docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output \
   pdf-translator:latest \
   translate /app/input/contract.pdf /app/output/contract-english.pdf
 ```
@@ -92,33 +72,40 @@ docker run -v $(pwd):/app/input -v $(pwd):/app/output \
 ### Advanced Options
 
 ```bash
-# Translation with custom batch size and verbose output
-docker run -v $(pwd):/app/input -v $(pwd):/app/output \
+# Fast translation (no formatting preservation)
+docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output \
+  pdf-translator:latest \
+  translate /app/input/document.pdf /app/output/translated.pdf --no-formatting
+
+# Verbose output with custom batch size
+docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output \
   pdf-translator:latest \
   translate /app/input/document.pdf /app/output/translated.pdf \
   --batch-size 32 --verbose
 
-# Disable formatting preservation (faster)
-docker run -v $(pwd):/app/input -v $(pwd):/app/output \
-  pdf-translator:latest \
-  translate /app/input/document.pdf /app/output/translated.pdf \
-  --no-formatting
-```
-
-### Using Translation Cache
-
-```bash
-# Create a cache directory
+# Use translation cache for faster repeated translations
 mkdir -p cache
-
-# Use translation cache to speed up repeated translations
 docker run \
-  -v $(pwd):/app/input \
-  -v $(pwd):/app/output \
+  -v $(pwd)/input:/app/input \
+  -v $(pwd)/output:/app/output \
   -v $(pwd)/cache:/app/cache \
   pdf-translator:latest \
   translate /app/input/document.pdf /app/output/translated.pdf \
   --cache-file /app/cache/translations.json
+```
+
+### Batch Processing
+
+```bash
+# Translate all PDFs in a directory
+for pdf in input/*.pdf; do
+    filename=$(basename "$pdf" .pdf)
+    echo "Translating: $filename"
+    
+    docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output \
+      pdf-translator:latest \
+      translate "/app/input/$filename.pdf" "/app/output/$filename-english.pdf"
+done
 ```
 
 ### Interactive Mode
@@ -126,200 +113,133 @@ docker run \
 ```bash
 # Open a shell inside the container
 docker run -it --rm \
-  -v $(pwd):/app/input \
-  -v $(pwd):/app/output \
+  -v $(pwd)/input:/app/input \
+  -v $(pwd)/output:/app/output \
   pdf-translator:latest bash
 
 # Inside the container, you can run:
-python pdf_translator.py /app/input/test.pdf /app/output/test-en.pdf --offline
+python de_en-translator_v2.py /app/input/test.pdf /app/output/test-en.pdf --model "./models/Helsinki-NLP/opus-mt-de-en"
 ```
 
-### Batch Processing Multiple Files
+## 🔧 Docker Compose (Persistent Service)
+
+Create a `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  pdf-translator:
+    image: pdf-translator:latest
+    container_name: pdf-translator-service
+    volumes:
+      - ./input:/app/input
+      - ./output:/app/output
+      - ./cache:/app/cache
+    command: tail -f /dev/null  # Keep running
+    restart: unless-stopped
+```
+
+Use it:
 
 ```bash
-# Create a script for batch processing
-cat > batch-translate.sh << 'EOF'
-#!/bin/bash
-INPUT_DIR="$1"
-OUTPUT_DIR="$2"
+# Start the service
+docker-compose up -d
 
-for pdf in "$INPUT_DIR"/*.pdf; do
-    filename=$(basename "$pdf" .pdf)
-    echo "Translating: $filename.pdf"
-    
-    docker run -v "$INPUT_DIR":/app/input -v "$OUTPUT_DIR":/app/output \
-      pdf-translator:latest \
-      translate "/app/input/$filename.pdf" "/app/output/$filename-english.pdf"
-done
-EOF
+# Translate files
+docker exec pdf-translator-service \
+  python de_en-translator_v2.py /app/input/document.pdf /app/output/document-en.pdf --model "./models/Helsinki-NLP/opus-mt-de-en"
 
-chmod +x batch-translate.sh
-
-# Use it
-./batch-translate.sh /path/to/german/pdfs /path/to/english/pdfs
+# Stop the service
+docker-compose down
 ```
 
-## 🔧 Configuration
+## 📊 What's Inside the Container
 
-### Environment Variables
+- **Python 3.11** with all required dependencies
+- **Translation Model**: Helsinki-NLP/opus-mt-de-en (~284MB)
+- **PDF Processing**: PyMuPDF for layout preservation
+- **Fonts**: Liberation and DejaVu fonts for better compatibility
+- **Security**: Runs as non-root user
+- **Size**: ~2-3GB total (includes model files)
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MODEL_PATH` | `/app/models/Helsinki-NLP/opus-mt-de-en` | Path to translation model |
-| `PYTHONPATH` | `/app` | Python module search path |
-| `OFFLINE_MODE` | `true` | Force offline mode |
+## 🏥 Testing and Troubleshooting
 
-### Volume Mounts
-
-| Mount Point | Purpose | Example |
-|-------------|---------|---------|
-| `/app/input` | Input PDF files | `-v $(pwd):/app/input` |
-| `/app/output` | Output translated files | `-v $(pwd):/app/output` |
-| `/app/cache` | Translation cache (optional) | `-v $(pwd)/cache:/app/cache` |
-
-## 🏥 Health Checks
-
-The container includes built-in health checks:
+### Test the Container
 
 ```bash
-# Check container health
-docker ps --format "table {{.Names}}\t{{.Status}}"
+# Quick model test
+docker run --rm pdf-translator:latest test
 
-# Manual health check
-docker exec <container-id> python simple_test.py
+# Check available commands
+docker run --rm pdf-translator:latest --help
+
+# Check model files
+docker run --rm pdf-translator:latest bash -c "ls -la /app/models/Helsinki-NLP/opus-mt-de-en/"
 ```
-
-## 🚨 Troubleshooting
 
 ### Common Issues
 
-**1. "Input file not found" Error**
+**1. "Input file not found"**
 ```bash
-# Make sure your file path is correct relative to the mount
-ls $(pwd)/your-file.pdf  # Check file exists locally
-
-# Correct mount path
-docker run -v $(pwd):/app/input -v $(pwd):/app/output \
-  pdf-translator:latest \
-  translate /app/input/your-file.pdf /app/output/translated.pdf
+# Check your file path and mount points
+ls input/your-file.pdf  # File should exist locally
 ```
 
-**2. Permission Denied Errors**
+**2. Permission denied**
 ```bash
 # Fix file permissions
-chmod 644 your-input.pdf
-chmod 755 $(pwd)  # Directory permissions
-
-# Run with user mapping (Linux only)
-docker run --user $(id -u):$(id -g) \
-  -v $(pwd):/app/input -v $(pwd):/app/output \
-  pdf-translator:latest translate /app/input/file.pdf /app/output/file-en.pdf
+chmod 644 input/*.pdf
+chmod 755 input output
 ```
 
-**3. Container Won't Start**
+**3. Container runs out of memory**
 ```bash
-# Check container logs
-docker run pdf-translator:latest test
-
-# Debug with interactive mode
-docker run -it --rm pdf-translator:latest bash
-```
-
-**4. Out of Memory Issues**
-```bash
-# Increase Docker memory limit or use smaller batch size
-docker run -v $(pwd):/app/input -v $(pwd):/app/output \
+# Use smaller batch size
+docker run -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output \
   pdf-translator:latest \
-  translate /app/input/large.pdf /app/output/large-en.pdf \
-  --batch-size 8
+  translate /app/input/large.pdf /app/output/large-en.pdf --batch-size 8
 ```
 
-### Debug Commands
+## 📈 Performance Benchmarks
 
-```bash
-# Check model files
-docker run --rm pdf-translator:latest bash -c "ls -la /app/models/Helsinki-NLP/opus-mt-de-en/"
-
-# Check Python dependencies
-docker run --rm pdf-translator:latest pip list
-
-# Test model loading
-docker run --rm pdf-translator:latest python -c "
-from transformers import MarianMTModel, MarianTokenizer
-model = MarianMTModel.from_pretrained('/app/models/Helsinki-NLP/opus-mt-de-en', local_files_only=True)
-print('Model loaded successfully!')
-"
-```
-
-## 📊 Performance Benchmarks
-
-| Document Size | Processing Time | Memory Usage |
-|---------------|----------------|--------------|
-| 1-5 pages | 10-30 seconds | 1.5GB |
-| 6-20 pages | 30-120 seconds | 2GB |
-| 21-50 pages | 2-5 minutes | 2.5GB |
-| 50+ pages | 5+ minutes | 3GB+ |
+| Document Size | Processing Time | Memory Usage | Container Size |
+|---------------|----------------|--------------|----------------|
+| 1-5 pages | 10-30 seconds | 1.5GB | 2.8GB |
+| 6-20 pages | 30-120 seconds | 2GB | 2.8GB |
+| 21-50 pages | 2-5 minutes | 2.5GB | 2.8GB |
+| 50+ pages | 5+ minutes | 3GB+ | 2.8GB |
 
 **Optimization Tips:**
-- Use `--batch-size 8` for large documents to reduce memory usage
-- Use `--no-formatting` for faster processing when layout isn't critical
+- Use `--no-formatting` for 2x faster processing
 - Enable caching with `--cache-file` for repeated translations
+- Use smaller `--batch-size` for large documents
 
-## 🐳 Docker Commands Reference
 
-### Image Management
+## 🔐 Security Features
 
-```bash
-# List images
-docker images pdf-translator
-
-# Remove old images
-docker rmi pdf-translator:old-version
-
-# Check image size
-docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
-
-# Inspect image details
-docker inspect pdf-translator:latest
-```
-
-### Container Management
-
-```bash
-# Run in background (daemon mode)
-docker run -d --name pdf-translator-service \
-  -v $(pwd):/app/input -v $(pwd):/app/output \
-  pdf-translator:latest tail -f /dev/null
-
-# Execute commands in running container
-docker exec pdf-translator-service \
-  python pdf_translator.py /app/input/test.pdf /app/output/test-en.pdf --offline
-
-# Stop and remove container
-docker stop pdf-translator-service
-docker rm pdf-translator-service
-```
-
-### Maintenance
-
-```bash
-# Clean up unused containers and images
-docker system prune
-
-# Remove all stopped containers
-docker container prune
-
-# Remove unused images
-docker image prune
-```
-
-## 🔐 Security Considerations
-
-- **Non-root execution**: Container runs as unprivileged user `pdfuser`
+- **Non-root execution**: Container runs as unprivileged user
 - **Read-only root filesystem**: Application files are immutable
-- **Minimal attack surface**: Only necessary dependencies included
-- **No network access required**: Completely offline operation
-- **Volume isolation**: Only mounted directories are accessible
+- **No network access**: Complete offline operation
+- **Minimal attack surface**: Only essential dependencies
+- **Volume isolation**: Only mounted directories accessible
+
+## ✨ Key Advantages of Docker Approach
+
+- **📦 Self-contained**: Models and dependencies included
+- **🔄 Reproducible**: Same environment everywhere
+- **🚀 Easy deployment**: Single `docker run` command
+- **💻 Cross-platform**: Works on Windows, Mac, Linux
+- **🔒 Secure**: Isolated from host system
+- **📱 Portable**: Easy to share and distribute
+
+## 🆚 Comparison with Other Approaches
+
+| Approach | Setup Complexity | Distribution | Isolation | Resource Usage |
+|----------|------------------|--------------|-----------|----------------|
+| **Docker** | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐ |
+| Python Local | ⭐⭐ | ⭐ | ⭐ | ⭐⭐⭐⭐⭐ |
+| Kubernetes | ⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐ |
 
 ## 📄 License
 
@@ -328,17 +248,21 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with Docker: `./docker-build.sh -t`
-5. Submit a pull request
+2. Create your feature branch
+3. Test with Docker: `./docker-build.sh -t`
+4. Submit a pull request
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/pdf-translation-service/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/pdf-translation-service/discussions)
-- **Docker Hub**: [pdf-translator](https://hub.docker.com/r/yourusername/pdf-translator)
+- **GitHub Issues**: [Report bugs](https://github.com/pdf-translator-service-de_en_docker_deploy/issues) - **Docker Hub**: [View image](https://hub.docker.com/repository/docker/rganeshsharma2489/pdf-translator-service-de_en_docker_deplo)
+- **Documentation**: [Full docs](./DOCKER_README.md)
 
 ---
+ 
+**🐳 Containerized for your convenience!**
 
-**Built with ❤️ by Ganesh Sharma for offline PDF translation**
+*Translate German PDFs to English with a single Docker command - no setup hassles, no dependency conflicts, just results.*
+
+**Built with ❤️ by the Ganesh Sharma**
+
+*Making document translation accessible, fast, and reliable for everyone.*
