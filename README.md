@@ -20,25 +20,6 @@ A high-performance, production-ready microservice for translating German PDF doc
 
 ## 🏗️ Architecture
 
-```mermaid
-graph TB
-    A[Client] -->|Upload PDF| B[Ingress Controller]
-    B --> C[Load Balancer]
-    C --> D[PDF Translation Service]
-    D --> E[MarianMT Model]
-    D --> F[File Storage]
-    D --> G[Metrics Export]
-    G --> H[Prometheus]
-    H --> I[Grafana]
-    
-    subgraph "Kubernetes Cluster"
-        C
-        D
-        E
-        F
-    end
-```
-
 ## 🚀 Quick Start
 # Repo structure
 
@@ -50,7 +31,7 @@ pdf-translation-service/
 ├── 🔄 CI/CD (GitHub Actions workflows)
 ├── 📚 Helm Charts (Production-ready with multiple environments)
 ├── 🧪 Testing (Unit, integration, load tests)
-└── 📖 Documentation (Comprehensive guides)
+└── 📖 docs (Comprehensive guides)
 ```
 
 ### Prerequisites
