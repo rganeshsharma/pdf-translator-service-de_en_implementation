@@ -1,0 +1,73 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'v1.28.0'
+    
+    - name: Set up Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: 'v3.12.0'
+    
+    - name: Configure kubectl
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
+        kubectl cluster-info
+    
+    - name: Deploy with Helm
+      run: |
+        ENV="${{ github.event.inputs.environment || 'staging' }}"
+        VERSION="${{ github.ref_name }}"
+        
+        helm upgrade --install pdf-translator-$ENV \
+          ./helm/pdf-translation-chart \
+          --namespace pdf-translator-$ENV \
+          --create-namespace \
+          --values helm/pdf-translation-chart/values-$ENV.yaml \
+          --set image.tag=$VERSION \
+          --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --wait \
+          --timeout 10m
+    
+    - name: Verify deployment
+      run: |
+        ENV="${{ github.event.inputs.environment || 'staging' }}"
+        kubectl get pods -n pdf-translator-$ENV
+        kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=pdf-translation-chart -n pdf-translator-$ENV --timeout=300s
+    
+    - name: Run smoke tests
+      run: |
+        ENV="${{ github.event.inputs.environment || 'staging' }}"
+        INGRESS_IP=$(kubectl get ingress pdf-translator-ingress -n pdf-translator-$ENV -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        
+        if [ ! -z "$INGRESS_IP" ]; then
+          curl -f http://$INGRESS_IP/health || exit 1
+          echo "✅ Smoke tests passed"
+        else
+          echo "⚠️ No external IP found, skipping smoke tests"
+        fi
